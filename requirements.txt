@@ -9,3 +9,4 @@ streamlit==1.39.0
 lancedb==0.14.0
 llama-index-vector-stores-lancedb==0.1.6
 langchain-community==0.3.2
+typing==3.7.4.3
