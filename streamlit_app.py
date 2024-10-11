@@ -3,12 +3,14 @@ import logging
 import streamlit as st
 import pandas as pd
 import numpy as np
+
 from keboola.component import CommonInterface
 from llama_index.core import VectorStoreIndex, Document, StorageContext
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.vector_stores.lancedb import LanceDBVectorStore
+
 from langchain.callbacks import StreamlitCallbackHandler
 from dotenv import load_dotenv
 
@@ -16,13 +18,11 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Keboola Input
 ci = CommonInterface()
 input_table = ci.get_input_table_definition_by_name('embed_flow.csv')
 
 df = pd.read_csv(input_table)
 
-# Streamlit initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
     ai_intro = "Hello, I'm Kai, your AI Assistant. I'm here to help you with your questions. What can I do for you?"
@@ -39,7 +39,6 @@ class UseEmbeddings(BaseEmbedding):
     def embed_documents(self, documents):
         return [self.embeddings_dict[doc.doc_id] for doc in documents]
 
-# Create documents and embedding dictionary from CSV data
 documents = []
 embeddings_dict = {}
 
@@ -50,30 +49,23 @@ for i, row in df.iterrows():
 
 embed_model = UseEmbeddings(embeddings_dict)
 
-# Initialize LanceDBVectorStore
 vector_store = LanceDBVectorStore()
 
-# Insert embeddings into LanceDB
 for doc_id, embedding in embeddings_dict.items():
     vector_store.add_vector(doc_id, embedding)
 
-# Storage context
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-# Index the documents using the embeddings in LanceDB
 index = VectorStoreIndex.from_documents(
     documents, 
     storage_context=storage_context, 
     embed_model=embed_model
 )
 
-# Retriever
 retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 
-# Query Engine
 query_engine = RetrieverQueryEngine.from_args(retriever, node_postprocessors=[])
 
-# Streamlit UI
 st.title("Kai - Your AI Assistant")
 
 user_input = st.chat_input("Ask a question")
