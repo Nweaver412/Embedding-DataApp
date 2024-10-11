@@ -20,8 +20,9 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 ci = CommonInterface()
 input_table = ci.get_input_table_definition_by_name('embed_flow.csv')
+csv_path = input_table.full_path
 
-df = pd.read_csv(input_table)
+df = pd.read_csv(csv_path)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
