@@ -3,6 +3,7 @@ import logging
 import streamlit as st
 import pandas as pd
 import numpy as np
+import ast
 
 from keboola.component import CommonInterface
 from llama_index.core import VectorStoreIndex, Document, StorageContext
@@ -13,7 +14,6 @@ from llama_index.vector_stores.lancedb import LanceDBVectorStore
 
 from langchain.callbacks import StreamlitCallbackHandler
 
-from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,48 +31,27 @@ if "messages" not in st.session_state:
     ai_intro = "Hello, I'm Kai, your AI Assistant. I'm here to help you with your questions. What can I do for you?"
     st.session_state.messages.append({"role": "assistant", "content": ai_intro})
 
-class UseEmbeddings(BaseEmbedding):
-    def __init__(self, embeddings_dict):
-        super().__init__()
-        self.embeddings_dict = embeddings_dict
-
-    def embed_query(self, query: str) -> List[float]:
-        return np.zeros(len(next(iter(self.embeddings_dict.values())))).tolist()
-
-    def embed_documents(self, documents: List[Document]) -> List[List[float]]:
-        return [self.embeddings_dict[doc.doc_id].tolist() for doc in documents]
-
-    async def aget_query_embedding(self, query: str) -> List[float]:
-        return self.embed_query(query)
-
-    async def aget_text_embedding(self, text: str) -> List[float]:
-        return self.embed_query(text)
-
-    def get_query_embedding(self, query: str) -> List[float]:
-        return self.embed_query(query)
-
-    def get_text_embedding(self, text: str) -> List[float]:
-        return self.embed_query(text)
-
+# Process existing embeddings
 documents = []
 embeddings_dict = {}
 
 for i, row in df.iterrows():
     doc_id = str(i)
-    documents.append(Document(doc_id=doc_id, text=row['text']))
-    embeddings_dict[doc_id] = np.array(eval(row['embedding']))
+    text = row['text']
+    embedding = ast.literal_eval(row['embeddings'])  # Using 'embeddings' column
+    
+    documents.append(Document(doc_id=doc_id, text=text, embedding=embedding))
+    embeddings_dict[doc_id] = embedding
 
-embed_model = UseEmbeddings(embeddings_dict)
-
-# Create LanceDB vector store and add vectors in one go
+# Create LanceDB vector store with existing embeddings
 vector_store = LanceDBVectorStore.from_dict(embeddings_dict)
 
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
+# Create index using documents with pre-computed embeddings
 index = VectorStoreIndex.from_documents(
     documents, 
-    storage_context=storage_context, 
-    embed_model=embed_model
+    storage_context=storage_context
 )
 
 retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
