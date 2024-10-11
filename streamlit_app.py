@@ -22,11 +22,7 @@ input_table = ci.get_input_table_definition_by_name('embed_flow.csv')
 
 df = pd.read_csv(input_table)
 
-# Find latest path
-first_file = input_table[0]
-
-extract_path = "out/tables/"
-
+# Streamlit initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
     ai_intro = "Hello, I'm Kai, your AI Assistant. I'm here to help you with your questions. What can I do for you?"
@@ -43,7 +39,7 @@ class UseEmbeddings(BaseEmbedding):
     def embed_documents(self, documents):
         return [self.embeddings_dict[doc.doc_id] for doc in documents]
 
-# Create documents from CSV data
+# Create documents and embedding dictionary from CSV data
 documents = []
 embeddings_dict = {}
 
@@ -54,13 +50,17 @@ for i, row in df.iterrows():
 
 embed_model = UseEmbeddings(embeddings_dict)
 
-# Vector Store
+# Initialize LanceDBVectorStore
 vector_store = LanceDBVectorStore()
+
+# Insert embeddings into LanceDB
+for doc_id, embedding in embeddings_dict.items():
+    vector_store.add_vector(doc_id, embedding)
 
 # Storage context
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-# Index
+# Index the documents using the embeddings in LanceDB
 index = VectorStoreIndex.from_documents(
     documents, 
     storage_context=storage_context, 
