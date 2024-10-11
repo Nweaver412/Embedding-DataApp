@@ -1,6 +1,6 @@
 keboola.component==1.4.4
 keboola.utils==1.1.0
-langchain==0.3.2
+langchain==0.3.3
 llama_index==0.10.5
 numpy>=1.21,<2
 pandas==2.2.3
@@ -8,3 +8,4 @@ python-dotenv==1.0.1
 streamlit==1.39.0
 lancedb==0.14.0
 llama-index-vector-stores-lancedb==0.1.6
+langchain-community==0.3.2
