@@ -12,6 +12,8 @@ from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.vector_stores.lancedb import LanceDBVectorStore
 
 from langchain.callbacks import StreamlitCallbackHandler
+
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,11 +36,23 @@ class UseEmbeddings(BaseEmbedding):
         super().__init__()
         self.embeddings_dict = embeddings_dict
 
-    def embed_query(self, query):
-        return np.zeros(len(next(iter(self.embeddings_dict.values()))))
+    def embed_query(self, query: str) -> List[float]:
+        return np.zeros(len(next(iter(self.embeddings_dict.values())))).tolist()
 
-    def embed_documents(self, documents):
-        return [self.embeddings_dict[doc.doc_id] for doc in documents]
+    def embed_documents(self, documents: List[Document]) -> List[List[float]]:
+        return [self.embeddings_dict[doc.doc_id].tolist() for doc in documents]
+
+    async def aget_query_embedding(self, query: str) -> List[float]:
+        return self.embed_query(query)
+
+    async def aget_text_embedding(self, text: str) -> List[float]:
+        return self.embed_query(text)  # Using embed_query as a placeholder
+
+    def get_query_embedding(self, query: str) -> List[float]:
+        return self.embed_query(query)
+
+    def get_text_embedding(self, text: str) -> List[float]:
+        return self.embed_query(text)  # Using embed_query as a placeholde
 
 documents = []
 embeddings_dict = {}
