@@ -7,3 +7,4 @@ pandas==2.2.3
 python-dotenv==1.0.1
 streamlit==1.39.0
 lancedb==0.6.13 
+llama-index-vector-stores-lancedb==0.1.6
