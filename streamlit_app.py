@@ -46,13 +46,13 @@ class UseEmbeddings(BaseEmbedding):
         return self.embed_query(query)
 
     async def aget_text_embedding(self, text: str) -> List[float]:
-        return self.embed_query(text)  # Using embed_query as a placeholder
+        return self.embed_query(text)
 
     def get_query_embedding(self, query: str) -> List[float]:
         return self.embed_query(query)
 
     def get_text_embedding(self, text: str) -> List[float]:
-        return self.embed_query(text)  # Using embed_query as a placeholde
+        return self.embed_query(text)
 
 documents = []
 embeddings_dict = {}
@@ -64,10 +64,8 @@ for i, row in df.iterrows():
 
 embed_model = UseEmbeddings(embeddings_dict)
 
-vector_store = LanceDBVectorStore()
-
-for doc_id, embedding in embeddings_dict.items():
-    vector_store.add_vector(doc_id, embedding)
+# Create LanceDB vector store and add vectors in one go
+vector_store = LanceDBVectorStore.from_dict(embeddings_dict)
 
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
@@ -78,7 +76,6 @@ index = VectorStoreIndex.from_documents(
 )
 
 retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
-
 query_engine = RetrieverQueryEngine.from_args(retriever, node_postprocessors=[])
 
 st.title("Kai - Your AI Assistant")
