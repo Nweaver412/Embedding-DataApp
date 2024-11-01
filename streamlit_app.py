@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 ci = CommonInterface()
-input_table = ci.get_input_table_definition_by_name('embed_flow.csv')
+input_table = ci.get_input_table_definition_by_name('app-embed-lancedb.csv')
 csv_path = input_table.full_path
 
 df = pd.read_csv(csv_path)
@@ -45,7 +45,6 @@ for i, row in df.iterrows():
 
 # Create LanceDB vector store with existing embeddings
 vector_store = LanceDBVectorStore.from_dict(embeddings_dict)
-
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 # Create index using documents with pre-computed embeddings
