@@ -37,7 +37,7 @@ embeddings_dict = {}
 
 for i, row in df.iterrows():
     doc_id = str(i)
-    text = row['text']
+    text = row['bodyData']
     embedding = ast.literal_eval(row['embedding'])
     
     documents.append(Document(doc_id=doc_id, text=text, embedding=embedding))
