@@ -2,7 +2,6 @@ import os
 import logging
 import streamlit as st
 import pandas as pd
-import numpy as np
 import ast
 
 from keboola.component import CommonInterface
@@ -44,10 +43,8 @@ index = VectorStoreIndex.from_documents(documents, storage_context=storage_conte
 retriever = VectorIndexRetriever(index=index, similarity_top_k=5)
 query_engine = RetrieverQueryEngine.from_args(retriever, node_postprocessors=[])
 
-# Streamlit UI setup
 st.title("Kai - Your AI Assistant")
 
-# Display chat input and handle user input
 user_input = st.chat_input("Ask a question")
 
 if user_input:
@@ -58,6 +55,7 @@ if user_input:
     st_callback = StreamlitCallbackHandler(st.container())
     response = query_engine.query(user_input)
     response_text = str(response)
+    
     st.session_state.messages.append({"role": "assistant", "content": response_text})
 
     with st.chat_message("assistant"):
