@@ -3,6 +3,7 @@ keboola.utils==1.1.0
 langchain==0.3.3
 llama_index==0.10.5
 numpy>=1.21,<2
+faiss-cpu
 pandas==2.2.3
 python-dotenv==1.0.1
 streamlit==1.39.0
