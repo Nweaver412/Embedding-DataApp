@@ -2,7 +2,6 @@ import os
 import logging
 import streamlit as st
 import pandas as pd
-import numpy as np
 import ast
 
 from keboola.component import CommonInterface
@@ -19,7 +18,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 if openai_api_key:
     os.environ["OPENAI_API_KEY"] = openai_api_key
 else:
-    st.error("Not set")
+    st.error("OPENAI_API_KEY is not set. Please check your .env file.")
 
 ci = CommonInterface()
 input_table = ci.get_input_table_definition_by_name('app-embed-lancedb.csv')
@@ -32,7 +31,7 @@ documents = [
     Document(page_content=row['bodyData'], metadata={"doc_id": str(i)})
     for i, row in df.iterrows()
 ]
-embeddings = [ast.literal_eval(row['embedding']) for row in df.iterrows()]
+embeddings = [ast.literal_eval(row['embedding']) for _, row in df.iterrows()]
 
 vector_store = FAISS.from_documents(documents, embedding_model)
 
